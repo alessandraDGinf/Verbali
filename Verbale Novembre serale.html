@@ -333,8 +333,7 @@
                     <tr id="coordinatore-row"> <!-- Aggiunto ID per riferimento facile -->
                         <td class="border border-gray-300 p-2 font-semibold align-top">Docente coordinatore:</td>
                         <td class="border border-gray-300 p-1"><textarea class="form-input-table-dynamic" placeholder="Disciplina..." value="" id="coordinatoreDisciplina"></textarea></td>
-                        <!-- MODIFICA: Aggiunto aggiornaFirmaCoordinatore() -->
-                        <td class="border border-gray-300 p-1"><textarea class="form-input-table-dynamic docente-nome" placeholder="Cognome e Nome..." value="" id="coordinatoreNome" oninput="aggiornaPresidente(); aggiornaOpzioniSegretario(); aggiornaFirmaCoordinatore();"></textarea></td>
+                                                <td class="border border-gray-300 p-1"><textarea class="form-input-table-dynamic docente-nome" placeholder="Cognome e Nome..." value="" id="coordinatoreNome" oninput="aggiornaPresidente(); aggiornaOpzioniSegretario(); "></textarea></td>
                         <td class="border border-gray-300 p-1 text-center align-middle"><input type="checkbox" class="form-checkbox"></td>
                         <td class="border border-gray-300 p-1 text-center no-print"></td> <!-- Cella vuota, no rimozione -->
                     </tr>
@@ -400,7 +399,7 @@
                 <input type="text" class="form-input ml-2 flex-grow min-w-[16rem]" placeholder="Nome Coordinatore se delegato..." id="presidenteNomeInput">
             </p>
             <p class="mb-2 flex items-center flex-wrap">
-                Funge da segretaria il prof/la prof.ssa
+                Funge da docente verbalizzante il prof/la prof.ssa
                 <!-- Modificato per aggiungere chiamata aggiornaFirmaSegretario -->
                 <select class="form-input ml-2 flex-grow min-w-[16rem]" id="selectSegretario" onchange="checkSegretarioAltro(); aggiornaFirmaSegretario();">
                     <option value="">Seleziona un docente...</option>
@@ -737,14 +736,10 @@
                     <p id="firmaSegretario">...................................</p>
                 </div>
                 <div class="text-center">
-                    <p class="mb-4">La Dirigente scolastica</p>
+                    <p class="mb-4">La Dirigente scolastica/Presidente</p>
                     <p>Prof.ssa Laura Castellana</p>
                 </div>
-                 <div class="text-center">
-                    <p class="mb-4">Il/la docente coordinatore</p>
-                    <!-- Aggiunto id -->
-                    <p id="firmaCoordinatore">...................................</p>
-                </div>
+                 
             </div>
         </div>
 
@@ -1110,7 +1105,7 @@
             aggiornaPresidente();
             aggiornaOpzioniSegretario();
             aggiornaFirmaSegretario();
-            aggiornaFirmaCoordinatore(); // Aggiunto per firma coordinatore
+             // Aggiunto per firma coordinatore
 
             // --- NUOVA MODIFICA ---
             // Forza il resize di TUTTE le textarea nella tabella docenti
@@ -1531,21 +1526,7 @@
         }
 
         // Funzione per aggiornare la firma del coordinatore delegato
-        function aggiornaFirmaCoordinatore() {
-            const coordinatoreNomeInput = document.getElementById('coordinatoreNome');
-            const firmaP = document.getElementById('firmaCoordinatore');
-
-            if (!coordinatoreNomeInput || !firmaP) return; // Sicurezza
-
-            const nomeCoordinatore = coordinatoreNomeInput.value.trim();
-
-            if (nomeCoordinatore) {
-                firmaP.textContent = nomeCoordinatore;
-            } else {
-                firmaP.textContent = '...................................'; // Ripristina i puntini
-            }
-        }
-
+       
 
         // Funzione per aggiornare il codice riunione
         function aggiornaCodiceRiunione() {
@@ -1655,7 +1636,7 @@
             document.getElementById('dynamic-svolgimento-points').innerHTML = '';
             
             aggiornaFirmaSegretario(); // Resetta firma segretario
-            aggiornaFirmaCoordinatore(); // Resetta firma coordinatore
+             // Resetta firma coordinatore
 
              // Applica auto-resize a tutte le textarea dopo il reset
              
