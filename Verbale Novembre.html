@@ -374,7 +374,7 @@
                         <td class="border border-gray-300 p-2 font-semibold align-top">Docente coordinatore:</td>
                         <td class="border border-gray-300 p-1"><textarea class="form-input-table-dynamic" placeholder="Disciplina..." value="" id="coordinatoreDisciplina"></textarea></td>
                        
-                        <td class="border border-gray-300 p-1"><textarea class="form-input-table-dynamic docente-nome" placeholder="Cognome e Nome..." value="" id="coordinatoreNome" oninput="aggiornaPresidente(); aggiornaOpzioniSegretario(); "></textarea></td>
+                        <td class="border border-gray-300 p-1"><textarea class="form-input-table-dynamic docente-nome" placeholder="Cognome e Nome..." value="" id="coordinatoreNome" oninput="aggiornaPresidente(); aggiornaOpzioniSegretario(); aggiornaOpzioniPresidenteDelegato(); "></textarea></td>
                         <td class="border border-gray-300 p-1 text-center align-middle"><input type="checkbox" class="form-checkbox"></td>
                         <td class="border border-gray-300 p-1 text-center no-print"></td> <!-- Cella vuota, no rimozione -->
                     </tr>
@@ -433,10 +433,16 @@
                 Presiede la riunione
                 <select class="form-input w-auto ml-2" id="selectPresidente" onchange="aggiornaPresidente()">
                     <option value="la Dirigente Scolastica prof.ssa Laura Castellana">la Dirigente Scolastica prof.ssa Laura Castellana</option>
-                    <option value="il coordinatore Delegato prof./prof.ssa">il coordinatore Delegato prof./prof.ssa</option>
+                    <option value="il delegato dalla Dirigente prof./prof.ssa">il delegato dalla Dirigente prof./prof.ssa</option>
                 </select>
-                <!-- Modificato per aggiungere ml-2 -->
-                <input type="text" class="form-input ml-2 flex-grow min-w-[16rem]" placeholder="Nome Coordinatore se delegato..." id="presidenteNomeInput">
+                
+                <select class="form-input ml-2 flex-grow min-w-[16rem]" id="selectPresidenteDelegato" style="display:none;" onchange="checkPresidenteDelegatoAltro()">
+                    <option value="">Seleziona un docente...</option>
+                    <option value="_altro_">Altro...</option>
+                </select>
+                <input type="text" class="form-input w-auto ml-2 flex-grow min-w-[16rem]" placeholder="Cognome e Nome..." id="presidenteAltroNome" style="display:none;" oninput="aggiornaFirmaPresidente()">
+
+                <input type="text" class="form-input ml-2 flex-grow min-w-[16rem]" placeholder="Nome Coordinatore se delegato..." id="presidenteNomeInput" style="display:none;">
             </p>
             <p class="mb-2 flex items-center flex-wrap">
                 Funge da docente verbalizzante il prof/la prof.ssa
@@ -464,7 +470,7 @@
 
         <!-- PUNTO 1 -->
         <div class="mb-6">
-            <h3 class="text-md font-semibold text-gray-800 mb-2 uppercase">1. Analisi della situazione di partenza della classe</h3>
+            <h3 class="text-md font-semibold text-gray-800 mb-2 uppercase">1. Analisi della situazione di partenza della classe...</h3>
             <p class="mb-2">Risultati dei test d’ingresso/osservazioni effettuati per materie o per asse espressi in numero di alunni:</p>
             <table class="w-full border-collapse mb-4 text-sm">
                 <thead>
@@ -860,7 +866,7 @@
                 </div>
                 <div class="text-center">
                     <p class="mb-4">La Dirigente scolastica/Presidente</p>
-                    <p>Prof.ssa Laura Castellana</p>
+                   <p id="firmaPresidente">Prof.ssa Laura Castellana</p>
                 </div>
                  
             </div>
@@ -1928,6 +1934,7 @@
             aggiornaPresidente();
             aggiornaOpzioniSegretario();
             aggiornaFirmaSegretario();
+aggiornaOpzioniPresidenteDelegato();
              // Aggiunto per firma coordinatore
 
             // --- NUOVA MODIFICA ---
@@ -1983,6 +1990,7 @@
 
             // Aggiorna menu segretario
             aggiornaOpzioniSegretario();
+
         }
 
         // Funzione per rimuovere una riga docente (leggermente modificata per sicurezza)
@@ -2029,6 +2037,7 @@
             aggiornaOpzioniSegretario();
             // Aggiorna la firma se il segretario rimosso era selezionato
             aggiornaFirmaSegretario();
+	aggiornaOpzioniPresidenteDelegato();
         }
         // --- FINE NUOVA LOGICA POPOLAMENTO DOCENTI ---
 
@@ -2285,28 +2294,61 @@
 
 
         // Funzione per aggiornare il nome del presidente delegato e la visibilità
+        // Funzione per aggiornare il nome del presidente delegato e la visibilità (MODIFICATA)
         function aggiornaPresidente() {
             const select = document.getElementById('selectPresidente');
-            const targetInput = document.getElementById('presidenteNomeInput');
             const coordinatoreNomeInput = document.getElementById('coordinatoreNome');
+            
+            // I NUOVI elementi da mostrare/nascondere
+            const menuDelegato = document.getElementById('selectPresidenteDelegato');
+            const campoAltroDelegato = document.getElementById('presidenteAltroNome');
+            
+            // Il VECCHIO campo da nascondere sempre
+            const oldTargetInput = document.getElementById('presidenteNomeInput');
 
-            if (!select || !targetInput || !coordinatoreNomeInput) return; // Sicurezza
+            if (!select || !menuDelegato || !campoAltroDelegato || !oldTargetInput) return; // Sicurezza
 
             const selectedValue = select.value;
-            const coordinatoreNome = coordinatoreNomeInput.value;
-            const triggerValue = "il coordinatore Delegato prof./prof.ssa";
+            // Testo già aggiornato
+            const triggerValue = "il delegato dalla Dirigente prof./prof.ssa"; 
 
             if (selectedValue === triggerValue) {
-                targetInput.value = coordinatoreNome;
-                targetInput.readOnly = true;
-                targetInput.classList.add('bg-gray-100');
-                targetInput.style.display = 'inline-block'; // Mostra il campo
+                // Mostra il NUOVO menu a tendina
+                menuDelegato.style.display = 'inline-block';
+                
+                // Nascondi il VECCHIO input
+                oldTargetInput.style.display = 'none';
+                oldTargetInput.value = ''; // Svuotalo per sicurezza
+
+                // Prova a preselezionare il coordinatore nel nuovo menu
+                const coordinatoreNome = coordinatoreNomeInput.value;
+                const opzioneCoordinatore = menuDelegato.querySelector(`option[value="${coordinatoreNome}"]`);
+                
+                if (coordinatoreNome && opzioneCoordinatore) {
+                    menuDelegato.value = coordinatoreNome;
+                } else if (menuDelegato.value === '_altro_') {
+                    // Se era selezionato "Altro", lascialo e mostra il campo
+                     campoAltroDelegato.style.display = 'inline-block';
+                } else {
+                    // Altrimenti resetta
+                    menuDelegato.value = '';
+                }
+                
+                // Assicurati che il campo "Altro" sia nascosto se non serve
+                if(menuDelegato.value !== '_altro_') {
+                    campoAltroDelegato.style.display = 'none';
+                }
+
             } else {
-                targetInput.value = ''; // Svuota comunque per sicurezza
-                targetInput.readOnly = false;
-                targetInput.classList.remove('bg-gray-100');
-                targetInput.style.display = 'none'; // Nascondi il campo
+                // Nascondi i NUOVI controlli (menu e campo "Altro")
+                menuDelegato.style.display = 'none';
+                campoAltroDelegato.style.display = 'none';
+                // Nascondi il VECCHIO input
+                oldTargetInput.style.display = 'none';
             }
+
+            // Alla fine, aggiorna sempre la firma
+            aggiornaFirmaPresidente();
         }
 
 
@@ -2406,7 +2448,88 @@
 
         // Funzione per aggiornare la firma del coordinatore delegato
         
+// NUOVA FUNZIONE: Popola il menu a tendina del presidente delegato
+        function aggiornaOpzioniPresidenteDelegato() {
+            const select = document.getElementById('selectPresidenteDelegato');
+            if (!select) return;
 
+            const selectedValue = select.value; // Salva il valore corrente
+
+            // Svuota le opzioni tranne "Seleziona..." e "Altro..."
+            const opzioni = select.querySelectorAll('option');
+            for (let i = opzioni.length - 1; i >= 0; i--) {
+                const val = opzioni[i].value;
+                if (val !== "" && val !== "_altro_") {
+                    opzioni[i].remove();
+                }
+            }
+
+            const nomiDocenti = document.querySelectorAll('.docente-nome');
+            const altroOption = select.querySelector('option[value="_altro_"]');
+            const nomiUnici = new Set();
+
+            nomiDocenti.forEach(textarea => {
+                const nome = textarea.value.trim();
+                if (nome && !nomiUnici.has(nome)) {
+                    nomiUnici.add(nome);
+                    const option = document.createElement('option');
+                    option.value = nome;
+                    option.textContent = nome;
+                    select.insertBefore(option, altroOption);
+                }
+            });
+
+            // Prova a ripristinare la selezione precedente
+            let valoreValido = Array.from(select.options).some(opt => opt.value === selectedValue);
+            if (valoreValido) {
+                select.value = selectedValue;
+            } else {
+                select.value = ""; // Altrimenti resetta
+            }
+        }
+
+        // NUOVA FUNZIONE: Gestisce il campo "Altro" del presidente delegato
+        function checkPresidenteDelegatoAltro() {
+            const select = document.getElementById('selectPresidenteDelegato');
+            const altroInput = document.getElementById('presidenteAltroNome');
+            if (!select || !altroInput) return;
+
+            if (select.value === '_altro_') {
+                altroInput.style.display = 'inline-block';
+            } else {
+                altroInput.style.display = 'none';
+                altroInput.value = ''; // Svuota se non selezionato
+            }
+            aggiornaFirmaPresidente(); // Aggiorna la firma
+        }
+
+        // NUOVA FUNZIONE: Aggiorna la firma del presidente
+        function aggiornaFirmaPresidente() {
+            const selectPresidente = document.getElementById('selectPresidente');
+            const selectDelegato = document.getElementById('selectPresidenteDelegato');
+            const altroNomeInput = document.getElementById('presidenteAltroNome');
+            const firmaP = document.getElementById('firmaPresidente');
+
+            if (!selectPresidente || !firmaP) return; // Sicurezza
+
+            if (selectPresidente.value === 'la Dirigente Scolastica prof.ssa Laura Castellana') {
+                firmaP.textContent = 'Prof.ssa Laura Castellana';
+            } else {
+                // È selezionato "il delegato dalla Dirigente..."
+                let nomePresidente = '';
+                if (selectDelegato.value === '_altro_') {
+                    nomePresidente = altroNomeInput ? altroNomeInput.value.trim() : '';
+                } else {
+                    nomePresidente = selectDelegato.value.trim();
+                }
+
+                if (nomePresidente) {
+                    firmaP.textContent = nomePresidente;
+                } else {
+                    firmaP.textContent = '...................................'; // Fallback
+                }
+            }
+        }
 
         // Funzione per aggiornare il codice riunione
         function aggiornaCodiceRiunione() {
@@ -2584,8 +2707,6 @@ window.addEventListener("afterprint", () => {
 
 </body>
 </html>
-
-
 
 
 
